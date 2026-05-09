@@ -1,0 +1,19 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+pydantic[email]
+pydantic-settings
+
+# Azure SDKs
+azure-storage-blob
+azure-cognitiveservices-vision-computervision
+azure-ai-textanalytics
+msrest
+
+# Redis (caching)
+redis

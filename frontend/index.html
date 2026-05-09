@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SnapShare — Login</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  }
+  .logo {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e94560, #f5a623);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: .3rem;
+  }
+  .tagline { text-align: center; color: rgba(255,255,255,0.5); font-size: .9rem; margin-bottom: 2.5rem; }
+  .tab-row { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+  .tab {
+    flex: 1; padding: .6rem; border: 1px solid rgba(255,255,255,0.15);
+    background: transparent; color: rgba(255,255,255,0.5);
+    border-radius: 10px; cursor: pointer; font-size: .9rem; transition: all .2s;
+  }
+  .tab.active { background: #e94560; border-color: #e94560; color: #fff; font-weight: 600; }
+  label { display: block; font-size: .78rem; color: rgba(255,255,255,0.5); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .8px; }
+  input, select {
+    width: 100%; padding: .75rem 1rem;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: #fff; font-size: .95rem;
+    margin-bottom: 1rem; outline: none; transition: border-color .2s;
+  }
+  input:focus, select:focus { border-color: #e94560; }
+  select option { background: #1a1a2e; }
+  .btn {
+    width: 100%; padding: .85rem; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    background: linear-gradient(135deg, #e94560, #f5a623);
+    color: #fff; transition: opacity .2s; margin-top: .25rem;
+  }
+  .btn:hover { opacity: .85; }
+  .error {
+    background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.4);
+    border-radius: 8px; padding: .6rem 1rem; font-size: .85rem;
+    color: #ff8fa3; margin-bottom: 1rem; display: none;
+  }
+  .error.show { display: block; }
+  .info { text-align: center; color: rgba(255,255,255,0.4); font-size: .82rem; margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">📸 SnapShare</div>
+  <p class="tagline">Cloud-native photo sharing platform</p>
+
+  <div class="tab-row">
+    <button class="tab active" onclick="setTab('login', this)">Sign In</button>
+    <button class="tab" onclick="setTab('register', this)">Register</button>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <div id="form-login">
+    <label>Email</label>
+    <input type="email" id="login-email" placeholder="you@example.com"/>
+    <label>Password</label>
+    <input type="password" id="login-password" placeholder="••••••••"/>
+    <button class="btn" onclick="login()">Sign In</button>
+  </div>
+
+  <div id="form-register" style="display:none">
+    <label>Email</label>
+    <input type="email" id="reg-email" placeholder="you@example.com"/>
+    <label>Password</label>
+    <input type="password" id="reg-password" placeholder="Choose a password"/>
+    <label>I am a...</label>
+    <select id="reg-role">
+      <option value="consumer">Consumer — browse &amp; comment</option>
+    </select>
+    <button class="btn" onclick="register()">Create Account</button>
+  </div>
+
+  <p class="info">Creator accounts are set up by administrators.</p>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8000';
+
+  function setTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('form-login').style.display    = tab === 'login'    ? '' : 'none';
+    document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+    hideError();
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error');
+    el.textContent = msg; el.classList.add('show');
+  }
+  function hideError() { document.getElementById('error').classList.remove('show'); }
+
+  async function login() {
+    hideError();
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return showError('Please enter email and password.');
+    try {
+      const res  = await fetch(`${API}/users/login`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      if (!res.ok) return showError(data.detail || 'Login failed.');
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('role',  data.role);
+      localStorage.setItem('email', data.email);
+      window.location.href = data.role === 'creator' ? 'creator.html' : 'consumer.html';
+    } catch(e) { showError('Cannot connect to server. Is it running?'); }
+  }
+
+  async function register() {
+    hideError();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const role     = document.getElementById('reg-role').value;
+    if (!email || !password) return showError('Please fill in all fields.');
+    try {
+      const res  = await fetch(`${API}/users/register`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password, role})
+      });
+      const data = await res.json();
+      if (!res.ok) return showError(data.detail || 'Registration failed.');
+      showError('');
+      alert('Account created! Please sign in.');
+      setTab('login', document.querySelectorAll('.tab')[0]);
+    } catch(e) { showError('Cannot connect to server. Is it running?'); }
+  }
+
+  // Auto-redirect if already logged in
+  if (localStorage.getItem('token')) {
+    window.location.href = localStorage.getItem('role') === 'creator' ? 'creator.html' : 'consumer.html';
+  }
+</script>
+</body>
+</html>
