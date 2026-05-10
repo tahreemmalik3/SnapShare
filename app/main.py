@@ -7,6 +7,7 @@ from app.routes.photos_new import router as photos_router
 from app.routes.comments_new import router as comments_router
 from app.routes.ratings_new import router as ratings_router
 
+print("APP STARTING SUCCESSFULLY")
 app = FastAPI(title="SnapShare API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 os.makedirs("static/uploads", exist_ok=True)
