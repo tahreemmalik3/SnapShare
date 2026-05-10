@@ -10,3 +10,4 @@ azure-cosmos
 azure-storage-blob
 bcrypt==4.0.1
 gunicorn
+fastapi
