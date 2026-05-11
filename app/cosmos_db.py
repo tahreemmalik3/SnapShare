@@ -7,9 +7,8 @@ load_dotenv()
 COSMOS_URL = os.getenv("COSMOS_URL")
 COSMOS_KEY = os.getenv("COSMOS_KEY")
 DATABASE_NAME = "snapshare"
-
+# 1
 client = CosmosClient(COSMOS_URL, COSMOS_KEY)
-
 db = client.create_database_if_not_exists(id=DATABASE_NAME)
 
 users_container = db.create_container_if_not_exists(
