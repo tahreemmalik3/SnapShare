@@ -6,11 +6,6 @@ from app.routes import users
 from app.routes.photos_new import router as photos_router
 from app.routes.comments_new import router as comments_router
 from app.routes.ratings_new import router as ratings_router
-from app.db import init_cosmos
-
-@app.on_event("startup")
-def startup():
-    init_cosmos()
 
 print("APP STARTING SUCCESSFULLY")
 app = FastAPI(title="SnapShare API", version="1.0.0")
