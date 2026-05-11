@@ -24,7 +24,7 @@ comments_container = db.create_container_if_not_exists(
 ratings_container = db.create_container_if_not_exists(
     id="ratings", partition_key=PartitionKey(path="/photo_id")
 )
-# ─── USER OPERATIONS ──────────────────────────────────────────────────────────
+# ─── USER OPERATIONS 
 
 def get_user_by_email(email: str):
     query = "SELECT * FROM c WHERE c.email = @email"
