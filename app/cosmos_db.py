@@ -1,4 +1,5 @@
 from azure.cosmos import CosmosClient, PartitionKey, exceptions
+from azure.cosmos.exceptions import CosmosResourceExistsError
 from dotenv import load_dotenv
 import os
 
@@ -7,30 +8,33 @@ load_dotenv()
 COSMOS_URL = os.getenv("COSMOS_URL")
 COSMOS_KEY = os.getenv("COSMOS_KEY")
 DATABASE_NAME = "snapshare"
-# 1
+
 client = CosmosClient(COSMOS_URL, COSMOS_KEY)
 db = client.create_database_if_not_exists(id=DATABASE_NAME)
 
-users_container = db.create_container_if_not_exists(
-    id="users", partition_key=PartitionKey(path="/id")
-)
-photos_container = db.create_container_if_not_exists(
-    id="photos", partition_key=PartitionKey(path="/id")
-)
-comments_container = db.create_container_if_not_exists(
-    id="comments", partition_key=PartitionKey(path="/photo_id")
-)
-ratings_container = db.create_container_if_not_exists(
-    id="ratings", partition_key=PartitionKey(path="/photo_id")
-)
-# ─── USER OPERATIONS 
+def get_or_create_container(db, container_id, partition_key_path):
+    try:
+        return db.create_container_if_not_exists(
+            id=container_id,
+            partition_key=PartitionKey(path=partition_key_path)
+        )
+    except CosmosResourceExistsError:
+        return db.get_container_client(container_id)
+    except Exception:
+        return db.get_container_client(container_id)
+
+users_container = get_or_create_container(db, "users", "/id")
+photos_container = get_or_create_container(db, "photos", "/id")
+comments_container = get_or_create_container(db, "comments", "/photo_id")
+ratings_container = get_or_create_container(db, "ratings", "/photo_id")
+
+# ─── USER OPERATIONS ──────────────────────────────────────────────────────────
 
 def get_user_by_email(email: str):
     query = "SELECT * FROM c WHERE c.email = @email"
     params = [{"name": "@email", "value": email}]
     items = list(users_container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
     return items[0] if items else None
-
 
 def get_user_by_id(user_id: str):
     try:
