@@ -13,18 +13,17 @@ client = CosmosClient(COSMOS_URL, COSMOS_KEY)
 db = client.create_database_if_not_exists(id=DATABASE_NAME)
 
 users_container = db.create_container_if_not_exists(
-    id="users", partition_key=PartitionKey(path="/id"), offer_throughput=400
+    id="users", partition_key=PartitionKey(path="/id")
 )
 photos_container = db.create_container_if_not_exists(
-    id="photos", partition_key=PartitionKey(path="/id"), offer_throughput=400
+    id="photos", partition_key=PartitionKey(path="/id")
 )
 comments_container = db.create_container_if_not_exists(
-    id="comments", partition_key=PartitionKey(path="/photo_id"), offer_throughput=400
+    id="comments", partition_key=PartitionKey(path="/photo_id")
 )
 ratings_container = db.create_container_if_not_exists(
-    id="ratings", partition_key=PartitionKey(path="/photo_id"), offer_throughput=400
+    id="ratings", partition_key=PartitionKey(path="/photo_id")
 )
-
 # ─── USER OPERATIONS ──────────────────────────────────────────────────────────
 
 def get_user_by_email(email: str):
@@ -32,6 +31,7 @@ def get_user_by_email(email: str):
     params = [{"name": "@email", "value": email}]
     items = list(users_container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
     return items[0] if items else None
+
 
 def get_user_by_id(user_id: str):
     try:
